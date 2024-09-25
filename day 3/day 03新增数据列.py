@@ -53,3 +53,6 @@ print(df["amount_type"].value_counts())
 # df.loc[df["bWendu"]-df["yWendu"]<=10, "wencha_type2"] = "温差正常"
 #
 # df["wencha_type2"].value_counts()
+
+
+# df.to_excel("teststr.xlsx", index=False)
