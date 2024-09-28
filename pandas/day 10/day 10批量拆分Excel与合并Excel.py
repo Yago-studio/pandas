@@ -1,6 +1,6 @@
 import pandas as pd
 
-df_source = pd.read_csv(f"D:\pythonTest\量化分析/test.csv")
+df_source = pd.read_csv(f"/test.csv")
 
 total_row_count = df_source.shape[0]
 
@@ -34,7 +34,7 @@ df_subs = []
 # 二、合并多个小Excel到一个大Excel
 import os
 
-origin_path = "D:\pythonTest\量化分析\day 10\excel"
+origin_path = "/pandas/day 10/excel"
 excel_names = []
 for excel_name in os.listdir(origin_path):
     excel_names.append(excel_name)

@@ -8,9 +8,12 @@ stock_info_path = "E:\\数据集\\nasdaq100\\nasdaq100\\full\\stock_name.txt"
 df_stock_info1 = pd.read_csv(stock_info_path, sep=' - ', nrows=50,
                              names=['公司简称', '公司英文全称', '公司中文名称', '业务范围'],
                              engine='python')
-df_stock_info2 = pd.read_csv(stock_info_path, sep=' - ', header=50,
+print(df_stock_info1)
+
+df_stock_info2 = pd.read_csv(stock_info_path, sep=' - ', header=49,
                              names=['公司简称', '公司英文全称', '公司中文名称', '业务范围'],
                              engine='python')
+print(df_stock_info2)
 
 # 清理数据
 df_stock_info1["公司简称"] = df_stock_info1["公司简称"].str.replace(".", " ", regex=False)

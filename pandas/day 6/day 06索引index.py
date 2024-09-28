@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("../test.csv")
+df = pd.read_csv("../../test.csv")
 
 # 1、使用index查询数据
 # drop==False，让索引列还保持在column

@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-studf = pd.read_csv("../test.csv", skiprows=0)
+studf = pd.read_csv("../../test.csv", skiprows=0)
 
 # 步骤2：检测空值
 

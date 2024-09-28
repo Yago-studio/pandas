@@ -2,7 +2,7 @@ import pandas as pd
 
 
 
-df = pd.read_csv("../teststr.csv")
+df = pd.read_csv("../../teststr.csv")
 
 
 # 1.获取Series的str属性，使用各种字符串处理函数

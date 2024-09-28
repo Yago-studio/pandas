@@ -11,11 +11,11 @@ mydb = pymysql.connect(
 )
 
 query = "SELECT * FROM insurance_order"
-filename = "../test.csv"
+filename = "../../test.csv"
 df = pd.read_sql(query, mydb)
 df.to_csv(filename, index=False, encoding="utf-8-sig")
 
-df = pd.read_csv("../test.csv")
+df = pd.read_csv("../../test.csv")
 
 print(df.columns.tolist())
 

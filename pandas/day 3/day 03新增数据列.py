@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-df = pd.read_csv("../test.csv", skiprows=0)
+df = pd.read_csv("../../test.csv", skiprows=0)
 
 
 #1、直接赋值的方法

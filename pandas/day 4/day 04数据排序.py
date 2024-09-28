@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("../test.csv")
+df = pd.read_csv("../../test.csv")
 
 # 1、Series的排序
 #从小到大
