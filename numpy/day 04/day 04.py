@@ -1,3 +1,4 @@
+import numpy as np
 
 # 自定义函数
 # def matrix_multiplication(A,B):
@@ -27,6 +28,49 @@
 #
 
 matrix = [[1 if i == j else 0 for i in range(4)]for j in range(4)]
-for row in matrix:
-    print(row)
+# for row in matrix:
+#     print(row)
+
+#计算方阵的迹
+def trace(matrix):
+    rows = len(matrix)
+    cols = len(matrix[0])
+    if rows != cols:
+       raise ValueError("Matrix is not square")
+    diagonal_sum = sum(matrix[i][i] for i in range(rows))
+    return diagonal_sum
+# 示例用法
+A = [[1, 2, 3],
+[4, 5, 6],
+[7, 8, 9]]
+trace_A = trace(A)
+trace_matrix = np.trace(matrix)
+# print("矩阵的迹为:", trace_A, trace_matrix)
+
+
+#判断是否为轴对称矩阵
+# B = np.copy(matrix)
+# B_T = B.T
+# for i in range(B.shape[1]):
+#     for j in range(B.shape[0]):
+#         if B_T[i][j] == B[i][j]:
+#             continue
+#         else:
+#             break
+#     print("suit")
+
+
+
+#矩阵行列式
+C = np.array([[2, 3],
+             [3, 2]])
+
+C_res = np.linalg.det(C)
+
+# print(C_res)
+
+# 矩阵逆
+C_res = np.linalg.inv(C)
+
+print(C_res)
 
