@@ -37,7 +37,7 @@ condition = df["update_time"].str.startswith("2023-01-10 00:01:00")
 # 4. 使用正则表达式的处理
 # 添加新列
 # def get_nianyueri(x):
-#     year, month, day = x["update_time"].split("-")[:3]
+#     year, month, day 04= x["update_time"].split("-")[:3]
 #     return f"{year}年{month}月{day}日"
 #
 # df["中文日期"] = df.apply(get_nianyueri, axis=1)
