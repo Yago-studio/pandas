@@ -88,4 +88,3 @@ pd.concat(
     [pd.DataFrame([i], columns=['A']) for i in range(5)],
     ignore_index=True
 )
-

@@ -179,4 +179,139 @@ c = (
 )
 c.render('每日销售量走势.html')
 
+dts = list(data2['update_time'].unique())
+dts.reverse()
+
+#各店铺每日销售量排行
+from pyecharts.charts import Timeline
+
+tl = Timeline()
+tl.add_schema(
+#         is_auto_play=True,
+        is_loop_play=False,
+        play_interval=500,
+    )
+for dt in dts:
+    item = data2[data2['update_time'] <= dt].groupby('店名').agg({'sale_count': 'sum', 'sale_amount': 'sum'}).sort_values(by='sale_count', ascending=False)[:10].sort_values(by='sale_count').to_dict()
+    bar = (
+        Bar()
+        .add_xaxis([*item['sale_count'].keys()])
+        .add_yaxis("销售量", [round(val/10000,2) for val in item['sale_count'].values()], label_opts=opts.LabelOpts(position="right", formatter='{@[1]/} 万'))
+        .add_yaxis("销售额", [round(val/10000/10000,2) for val in item['sale_amount'].values()], label_opts=opts.LabelOpts(position="right", formatter='{@[1]/} 亿元'))
+        .reversal_axis()
+        .set_global_opts(
+            title_opts=opts.TitleOpts("累计销售量排行 TOP10")
+        )
+    )
+    tl.add(bar, dt)
+tl.render('累计销售量排行.html')
+
+from pyecharts.charts import Pie
+item = data2.groupby('店名').agg({'sale_count': 'sum'}).sort_values(by='sale_count', ascending=False)[:10].to_dict()['sale_count']
+item = {k: round(v/10000, 2) for k, v in item.items()}
+c = (
+    Pie()
+    .add("销量", [*item.items()])
+    .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c} 万({d}%)"))
+)
+c.render('累计销售量占比图.html')
+
+
+item = data2.groupby('店名').agg({'price': 'mean'}).sort_values(by='price', ascending=False)[:20].sort_values(by='price').to_dict()
+c = (
+    Bar()
+    .add_xaxis([*item['price'].keys()])
+    .add_yaxis("平均价格", [round(v, 2) for v in item['price'].values()], label_opts=opts.LabelOpts(position="right"))
+    .reversal_axis()
+    .set_global_opts(
+        title_opts=opts.TitleOpts("平均价格排行 TOP20")
+    )
+)
+c.render("平均价格排行.html")
+
+
+
+# 第三部分
+import pandas as pd
+
+fact_order = pd.read_excel(path2, sheet_name='销售订单表')
+dim_product = pd.read_excel(path2, sheet_name='商品信息表')
+
+
+fact_order.drop_duplicates(inplace=True)   # 删除重复数据
+fact_order.reset_index(drop=True, inplace=True)  # 重建索引
+fact_order.isnull().sum()  # 查看空值，有几条数据缺失
+
+fact_order.fillna(method='bfill', inplace=True) # 空值填充
+fact_order.fillna(method='ffill', inplace=True) # 空值填充
+fact_order.isnull().sum()  # 查看空值，有几条数据缺失
+
+
+fact_order['订单日期'] = fact_order['订单日期'].apply(lambda x: pd.to_datetime(x, format='%Y#%m#%d') if isinstance(x, str) else x)
+fact_order[fact_order['订单日期'] > '2021-01-01'] # 有一条脏数据
+
+fact_order = fact_order[fact_order['订单日期'] < '2021-01-01'] # 过滤掉脏数据
+fact_order['订单日期'].max(), fact_order['订单日期'].min()  # 数据区间在 2019-01-01 到 2019-09-30 之间
+
+fact_order['订购数量'] = fact_order['订购数量'].apply(lambda x: x.strip('个') if isinstance(x, str) else x).astype('int')
+fact_order['订购单价'] = fact_order['订购单价'].apply(lambda x: x.strip('元') if isinstance(x, str) else x).astype('float')
+fact_order['金额'] = fact_order['金额'].astype('float')
+
+
+fact_order['客户编码'] = fact_order['客户编码'].str.replace('编号', '')
+
+dim_product[dim_product.duplicated()].count()  # 没有完全重复的数据
+
+dim_product[dim_product['商品编号'].duplicated()].count()  # ID 唯一没有重复
+
+dim_product.isnull().sum()   # 没有空值
+
+# 数据可视化
+fact_order['订单月份'] = fact_order['订单日期'].apply(lambda x: x.month)
+item = fact_order.groupby('订单月份').agg({'订购数量': 'sum', '金额': 'sum'}).to_dict()
+x = [f'{key} 月' for key in item['订购数量'].keys()]
+y1 = [round(val/10000, 2) for val in item['订购数量'].values()]
+y2 = [round(val/10000/100, 2) for val in item['金额'].values()]
+c = (
+    Bar()
+    .add_xaxis(x)
+    .add_yaxis("订购数量（万件）", y1)
+    .add_yaxis("金额（百万元）", y2)
+    .set_global_opts(title_opts=opts.TitleOpts(title="每月订购情况"))
+    .set_series_opts(
+        label_opts=opts.LabelOpts(is_show=True),
+    )
+)
+c.render('每月订购情况.html')
+
+
+# RFM模型
+
+data_rfm = fact_order.groupby('客户编码').agg({'订单日期': 'max', '订单编码': 'count', '金额': 'sum'})
+data_rfm.columns = ['最近一次购买时间', '消费频率', '消费金额']
+data_rfm['R'] = data_rfm['最近一次购买时间'].rank(pct=True)   # 转化为排名 百分比，便于后续切片
+data_rfm['F'] = data_rfm['消费频率'].rank(pct=True)
+data_rfm['M'] = data_rfm['消费金额'].rank(pct=True)
+data_rfm.sort_values(by='R', ascending=False)
+
+
+#设定一个计算权重，R-Recency 20% F-Frequency 30% M-Money 50% ，通过这个权重进行打分。
+data_rfm['score'] = data_rfm['R'] * 20 + data_rfm['F'] * 30 + data_rfm['M'] * 50
+data_rfm['score'] = data_rfm['score'].round(1)
+data_rfm.sort_values(by='score', ascending=False)
+
+
+#划分标签
+import numpy as np
+data_rfm["label"] = pd.cut(data_rfm['score'],bins=[0,20,40,60,80,100],labels=['无价值客户','低价值客户','一般价值客户','高价值客户','重要价值客户'],right=True)
+
+item = data_rfm.groupby('label').agg({'label': 'count'}).to_dict()['label']
+item = {k: round(v, 2) for k, v in item.items()}
+c = (
+    Pie()
+    .add("销量", [*item.items()])
+    .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c} ({d}%)"))
+)
+c.render('客户分类.html')
+
 
